@@ -17,6 +17,8 @@ var player;
 var platforms;
 var cursors;
 var doubleJump;
+var playerStartX;
+var playerStartY;
 
 // interactable
 var hazards;
@@ -65,14 +67,16 @@ function create() {
     ledge = platforms.create(-150, 250, 'ground');
     ledge.body.immovable = true;
 
-    // The player and its settings
-    player = game.add.sprite(32, game.world.height - 150, 'dude');
+    // The player and its 
+    playerStartX = 32;
+    playerStartY = game.world.height - 150;
+    player = game.add.sprite(playerStartX, playerStartY, 'dude');
 
     //  We need to enable physics on the player
     game.physics.arcade.enable(player);
 
     //  Player physics properties. Give the little guy a slight bounce.
-//    player.body.bounce.y = 0.2;
+    //    player.body.bounce.y = 0.2;
     player.body.gravity.y = 600;
     player.body.collideWorldBounds = true;
 
@@ -82,6 +86,9 @@ function create() {
     
     // Focus camera on player
     game.camera.focusOnXY(0,0);
+
+    // Create array of other players
+    players = [];
 
     // Add a Hazard
     hazards = game.add.group();
@@ -116,16 +123,133 @@ function create() {
     //  Our controls.
     game.camera.follow(player);
     cursors = game.input.keyboard.createCursorKeys();
-    
+    setEventHandlers();
 }
+
+
+
+
+
+
+
+
+
+
+
+// socket io stuff
+var setEventHandlers = function () {
+  // Socket connection successful
+  socket.on('connect', onSocketConnected);
+
+  // Socket disconnection
+  socket.on('disconnect', onSocketDisconnect);
+
+  // New player message received
+  socket.on('new player', onNewPlayer);
+
+  // Player move message received
+  socket.on('move player', onMovePlayer);
+
+  // Player removed message received
+  socket.on('remove player', onRemovePlayer);
+}
+
+// Socket connected for first time
+function onSocketConnected () {
+  console.log('Connected to socket server');
+
+  // Reset players on reconnect
+  players.forEach(function (enemy) {
+    enemy.player.kill();
+  })
+  players = [];
+
+  // Send local player data to the game server
+  socket.emit('new player', { x: player.x, y: player.y });
+}
+
+// Socket disconnected
+function onSocketDisconnect () {
+  console.log('Disconnected from socket server');
+}
+
+// New player
+function onNewPlayer (data) {
+  console.log('New player connected:', data.id);
+
+  // Avoid possible duplicate players
+  var duplicate = playerById(data.id);
+  if (duplicate) {
+    console.log('Duplicate player!');
+    return;
+  }
+
+  // Add new player to the remote players array
+  players.push(new RemotePlayer(data.id, game, player, playerStartX, playerStartY));
+}
+
+// Move player
+function onMovePlayer (data) {
+  var movePlayer = playerById(data.id);
+
+  // Player not found
+  if (!movePlayer) {
+    console.log('Player not found: ', data.id);
+    return;
+  }
+
+  // Update player position?
+  movePlayer.player.x = data.x
+  movePlayer.player.y = data.y
+}
+
+// Remove player
+function onRemovePlayer (data) {
+  var removePlayer = playerById(data.id)
+
+  // Player not found
+  if (!removePlayer) {
+    console.log('Player not found: ', data.id)
+    return
+  }
+
+  removePlayer.player.kill()
+
+  // Remove player from array
+  players.splice(players.indexOf(removePlayer), 1)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function update() {
     //updateTimer();
+    for(var i =0; i< players.length; i++){
     //  Collide the player and the stars with the platforms
-    game.physics.arcade.collide(player, platforms);
-    game.physics.arcade.collide(stars, platforms);
-    game.physics.arcade.collide(hazards, stars);
-
+        players[i].update();
+        game.physics.arcade.collide(player, platforms);
+        game.physics.arcade.collide(stars, platforms);
+        game.physics.arcade.collide(hazards, stars);    
+    }
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     game.physics.arcade.overlap(player, stars, collectStar, null, this);
     game.physics.arcade.overlap(player,hazards, resetPlayer, null, this);
@@ -167,6 +291,7 @@ function update() {
         player.body.velocity.y = -350;
         doubleJump-=1;
     }
+    socket.emit('move player',{ x: player.x, y: player.y });
 }
 
 function collectStar (player, star) {
@@ -185,15 +310,25 @@ function resetPlayer (player, hazard){
 
 }
 function updateTimer() {
-	    minutes = Math.floor(game.time.time / 60000) % 60;
-	    seconds = Math.floor(game.time.time / 1000) % 60;
-	    milliseconds = Math.floor(game.time.time) % 100;
-	    //If any of the digits becomes a single digit number, pad it with a zero
-	    if (milliseconds < 10)
-	            milliseconds = '0' + milliseconds;
-	    if (seconds < 10)
-	            seconds = '0' + seconds;
-	    if (minutes < 10)
-	            minutes = '0' + minutes;
-	    timer.setText(minutes + ':'+ seconds + ':' + milliseconds);
-	 }
+    minutes = Math.floor(game.time.time / 60000) % 60;
+    seconds = Math.floor(game.time.time / 1000) % 60;
+    milliseconds = Math.floor(game.time.time) % 100;
+    //If any of the digits becomes a single digit number, pad it with a zero
+    if (milliseconds < 10)
+            milliseconds = '0' + milliseconds;
+    if (seconds < 10)
+            seconds = '0' + seconds;
+    if (minutes < 10)
+            minutes = '0' + minutes;
+    timer.setText(minutes + ':'+ seconds + ':' + milliseconds);
+}
+// Find player by ID
+function playerById (id) {
+  for (var i = 0; i < players.length; i++) {
+    if (players[i].player.name === id) {
+      return players[i]
+    }
+  }
+
+  return false
+}

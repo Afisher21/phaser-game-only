@@ -1,4 +1,4 @@
-function RemotePlayer (index, game, player, startX, startY) {
+var RemotePlayer = function(index, game, player, startX, startY) {
     // possibly accept cursors as another argument?
   this.game = game;
   this.player = player;
