@@ -1,19 +1,3 @@
-<!doctype html> 
-<html lang="en"> 
-<head> 
-	<meta charset="UTF-8" />
-    <title>Phaser - Making your first game, part 8</title>
-    <script src="//cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
-    <style type="text/css">
-        body {
-            margin: 0;
-        }
-    </style>
-</head>
-<body>
-
-<script type="text/javascript">
-
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 function preload() {
@@ -33,10 +17,11 @@ var player;
 var platforms;
 var cursors;
 var doubleJump;
-// interactable
 
+// interactable
 var hazards;
 var stars;
+// var buttons;
 
 // Timer
 // code from http://www.html5gamedevs.com/topic/1870-in-game-timer/
@@ -45,8 +30,12 @@ var minutes = 0;
 var seconds = 0;
 var milliseconds = 0;
 
-function create() {
+// Multiplayer
+var socket;
+var players;
 
+function create() {
+    //socket = io.connect();
     doubleJump = 1;
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -208,7 +197,3 @@ function updateTimer() {
 	            minutes = '0' + minutes;
 	    timer.setText(minutes + ':'+ seconds + ':' + milliseconds);
 	 }
-</script>
-
-</body>
-</html>
