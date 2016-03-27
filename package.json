@@ -1,6 +1,6 @@
 {
   "name": "phaser-multiplayer-game",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Phaser example gone multiplayer!",
   "main": "lib/game.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "dev": "nodemon .",
     "lint": "standard --verbose | snazzy"
   },
-  "author": "Francisco Dias",
+  "author": "Austin Fisher",
   "license": "MIT",
   "dependencies": {
     "ecstatic": "^1.0.1",

@@ -244,13 +244,13 @@ function onRemovePlayer (data) {
 
 function update() {
     //updateTimer();
-   // for(var i =0; i< players.length; i++){
+    for(var i =0; i< players.length; i++){
     //  Collide the player and the stars with the platforms
         game.physics.arcade.collide(player, platforms);
         game.physics.arcade.collide(stars, platforms);
         game.physics.arcade.collide(hazards, stars);    
-      //  players[i].update();
-    //}
+       players[i].update();
+    }
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     game.physics.arcade.overlap(player, stars, collectStar, null, this);
     game.physics.arcade.overlap(player,hazards, resetPlayer, null, this);
