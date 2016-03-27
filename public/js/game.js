@@ -33,11 +33,12 @@ var seconds = 0;
 var milliseconds = 0;
 
 // Multiplayer
+//var http = require('http');
 var socket;
 var players;
 
 function create() {
-    //socket = io.connect();
+    socket = io.connect();
     doubleJump = 1;
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
