@@ -8,7 +8,7 @@ var RemotePlayer = function(index, game, player, startX, startY) {
     this.player.name = index.toString();
 
     //  We need to enable physics on the player
-    game.physics.arcade.enable(player);
+    game.physics.arcade.enable(this.player);
     this.player.body.gravity.y = 600;
     this.player.body.collideWorldBounds = true;
 
